@@ -1,0 +1,80 @@
+FILE SERVER  
+TUJUAN: melayani client dalam request file server
+
+ATURAN PROTOKOL:
+- client harus mengirimkan request dalam bentuk string
+- string harus dalam format:
+  REQUEST spasi PARAMETER
+- PARAMETER dapat berkembang menjadi PARAMETER1 spasi PARAMETER2 dan seterusnya
+- Untuk request khusus seperti `upload`, client dapat mengirim data dalam format JSON:
+  {
+    "command": "upload",
+    "filename": "namafile.ext",
+    "filedata": "BASE64_ENCODED_DATA"
+  }
+- Semua response akan diberikan dalam bentuk JSON dan diakhiri
+  dengan karakter ASCII code #13#10#13#10 atau "\r\n\r\n"
+
+REQUEST YANG DILAYANI:
+----------------------------------------
+LIST  
+* TUJUAN: mendapatkan daftar seluruh file yang tersedia di server  
+* PARAMETER: tidak ada  
+* RESULT:  
+  - BERHASIL:  
+    - status: OK  
+    - data: list nama file  
+  - GAGAL:  
+    - status: ERROR  
+    - data: pesan kesalahan  
+----------------------------------------
+GET  
+* TUJUAN: mendapatkan isi file tertentu dari server  
+* PARAMETER:  
+  - PARAMETER1: nama file  
+* RESULT:  
+  - BERHASIL:  
+    - status: OK  
+    - data: "File <filename> berhasil diambil"
+    - data_file: isi file (encoded dalam base64)  
+  - GAGAL:  
+    - status: ERROR  
+    - data: pesan kesalahan  
+----------------------------------------
+UPLOAD  
+* TUJUAN: mengirim file dari client ke server  
+* FORMAT: JSON (lihat aturan di atas)  
+* PARAMETER (dalam JSON):  
+  - command: "upload"  
+  - filename: nama file  
+  - filedata: isi file dalam base64  
+* RESULT:  
+  - BERHASIL:  
+    - status: OK  
+    - data: "File <filename> berhasil disimpan"  
+  - GAGAL:  
+    - status: ERROR  
+    - data: pesan kesalahan  
+----------------------------------------
+DELETE  
+* TUJUAN: menghapus file tertentu dari server  
+* PARAMETER:  
+  - PARAMETER1: nama file  
+* RESULT:  
+  - BERHASIL:  
+    - status: OK  
+    - data: "File <filename> berhasil dihapus"  
+  - GAGAL:  
+    - status: ERROR  
+    - data: pesan kesalahan
+----------------------------------------
+
+CATATAN IMPLEMENTASI:
+1. Server berjalan secara default pada port 7777
+2. Semua file disimpan dalam direktori "files/" pada server
+3. Protokol menggunakan koneksi TCP/IP untuk komunikasi
+4. Untuk permintaan upload, ukuran file tidak dibatasi secara eksplisit, tetapi 
+   dibatasi oleh kapasitas memori server dan client
+5. Marker akhir pesan ("\r\n\r\n") digunakan untuk menandai akhir request dan response
+6. Encoding base64 digunakan untuk transfer konten binary file
+7. Server menangani multiple client secara bersamaan melalui threading
